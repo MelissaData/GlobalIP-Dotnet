@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace GlobalIP
+namespace GlobalIPDotnet
 {
   static class Program
   {
