@@ -44,8 +44,8 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Download this project
 ```
-$ git clone https://github.com/MelissaData/GlobalIP-Dotnet
-$ cd GlobalIP-Dotnet
+git clone https://github.com/MelissaData/GlobalIP-Dotnet
+cd GlobalIP-Dotnet
 ```
 
 ## Windows
@@ -88,15 +88,15 @@ There are two modes:
 
 	The script will prompt the user for input(s), then use the provided input(s) to call the Cloud API. For example:
 	```
-	$ .\GlobalIPDotnet.ps1
+	.\GlobalIPDotnet.ps1
 	```
 
 - Command Line 
 
 	You can pass an IP and license string into `-ip`, and `-license` parameters respectively to test the Cloud API. For example:
 	```
-    $ .\GlobalIPDotnet.ps1 -ip "12.203.219.6"
-    $ .\GlobalIPDotnet.ps1 -ip "12.203.219.6" -license "<your_license_string>"
+    .\GlobalIPDotnet.ps1 -ip "12.203.219.6"
+    .\GlobalIPDotnet.ps1 -ip "12.203.219.6" -license "<your_license_string>"
     ```
 	
 This is the expected output from a successful setup for interactive mode:
@@ -146,15 +146,15 @@ There are two modes:
 
 	The script will prompt the user for input(s), then use the provided input(s) to call the Cloud API. For example:
 	```
-	$ ./GlobalIPDotnet.sh
+	./GlobalIPDotnet.sh
 	```
 
 - Command Line 
 
 	You can pass an IP and license string into `--ip`, and `--license` parameters respectively to test the Cloud API. For example:
 	```
-    $ ./GlobalIPDotnet.sh --ip "12.203.219.6"
-    $ ./GlobalIPDotnet.sh --ip "12.203.219.6" --license "<your_license_string>"
+    ./GlobalIPDotnet.sh --ip "12.203.219.6"
+    ./GlobalIPDotnet.sh --ip "12.203.219.6" --license "<your_license_string>"
     ```
 
 This is the expected output from a successful setup for interactive mode:
