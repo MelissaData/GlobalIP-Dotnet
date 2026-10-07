@@ -2,8 +2,36 @@ using Newtonsoft.Json;
 
 namespace GlobalIPDotnet
 {
+  /// <summary>
+  /// Global IP looks up an IP address and returns location and network details
+  /// for it, such as city, region, country, postal code, latitude/longitude, time
+  /// zone, ISP and domain name, connection type, and proxy information.
+  ///
+  /// <para>High-level flow of this sample:</para>
+  /// <list type="number">
+  ///   <item><description>ARGS    - ParseArguments reads any --flag values off the command line.</description></item>
+  ///   <item><description>INPUT   - CallAPI fills in whatever wasn't supplied via interactive prompts.</description></item>
+  ///   <item><description>REQUEST - CallAPI builds the REST query string (license + IP address).</description></item>
+  ///   <item><description>CALL    - GetContents issues the GET request and pretty-prints the JSON response.</description></item>
+  /// </list>
+  ///
+  /// <para>This sample is a thin HTTP client: it builds a query string, sends a GET
+  /// request to the Global IP Cloud API, and prints the JSON response.</para>
+  ///
+  /// <para>Reference:</para>
+  /// <list type="bullet">
+  ///   <item><description>Documentation: https://docs.melissa.com/cloud-api/global-ip/global-ip-index.html</description></item>
+  ///   <item><description>Release notes: https://releasenotes.melissa.com/cloud-api/global-ip/</description></item>
+  ///   <item><description>Result codes: https://docs.melissa.com/melissa/result-codes/result-codes-index.html</description></item>
+  /// </list>
+  /// </summary>
   static class Program
   {
+    /// <summary>
+    /// Entry point. Reads the optional command-line arguments, then hands control to
+    /// CallAPI, which performs the actual request/response cycle.
+    /// </summary>
+    /// <param name="args">The raw command-line arguments.</param>
     static void Main(string[] args)
     {
       string baseServiceUrl = @"https://globalip.melissadata.net/";
@@ -11,10 +39,22 @@ namespace GlobalIPDotnet
       string license = "";
       string ip = "";
 
+      // Populate any values passed on the command line, then run the lookup.
       ParseArguments(ref license, ref ip, args);
       CallAPI(baseServiceUrl, serviceEndpoint, license, ip);
     }
 
+    /// <summary>
+    /// Reads the supported command-line options and writes each recognized value into
+    /// its matching by-ref parameter. Any parameter left unset here falls back to an
+    /// interactive prompt later in <see cref="CallAPI"/>.
+    ///
+    /// <para>Recognized flags (each followed by its value, e.g. "--ip 12.203.219.6"):
+    /// --license/-l, --ip.</para>
+    /// </summary>
+    /// <param name="license">Receives the Melissa license string, if supplied.</param>
+    /// <param name="ip">Receives the IP address to look up, if supplied.</param>
+    /// <param name="args">The raw command-line arguments to parse.</param>
     static void ParseArguments(ref string license, ref string ip, string[] args)
     {
       for (int i = 0; i < args.Length; i++)
@@ -36,6 +76,12 @@ namespace GlobalIPDotnet
       }
     }
 
+    /// <summary>
+    /// Issues the GET request against the Global IP endpoint and
+    /// pretty-prints the API call and the JSON response to the console.
+    /// </summary>
+    /// <param name="baseServiceUrl">The Global IP Cloud API base URL.</param>
+    /// <param name="requestQuery">The endpoint path plus query string built by <see cref="CallAPI"/>.</param>
     public static async Task GetContents(string baseServiceUrl, string requestQuery)
     {
       HttpClient client = new HttpClient();
@@ -44,6 +90,7 @@ namespace GlobalIPDotnet
 
       string text = await response.Content.ReadAsStringAsync();
 
+      // Re-serialize with indentation so the raw response is easier to read.
       var obj = JsonConvert.DeserializeObject(text);
       var prettyResponse = JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented);
 
@@ -68,6 +115,18 @@ namespace GlobalIPDotnet
       Console.WriteLine(prettyResponse);
     }
 
+    /// <summary>
+    /// Drives the interactive/CLI loop: gathers the required IP field, builds and
+    /// submits the REST query, prints the result, and optionally repeats for another record.
+    ///
+    /// <para>In interactive mode (no IP argument supplied) it loops, asking for a new record each pass
+    /// until the user answers "N". In one-shot mode (IP argument supplied) it runs a single
+    /// pass and exits.</para>
+    /// </summary>
+    /// <param name="baseServiceUrl">The Global IP Cloud API base URL.</param>
+    /// <param name="serviceEndPoint">The specific Global IP endpoint path to call.</param>
+    /// <param name="license">The Melissa license string sent with every request.</param>
+    /// <param name="ip">An IP address to look up in one-shot mode; if empty, the program prompts interactively.</param>
     static void CallAPI(string baseServiceUrl, string serviceEndPoint, string license, string ip)
     {
       Console.WriteLine("\n=============== WELCOME TO MELISSA GLOBAL IP CLOUD API ===============\n");
@@ -78,6 +137,7 @@ namespace GlobalIPDotnet
       {
         string inputIp = "";
 
+        // No IP was supplied via command line, so prompt for it.
         if (string.IsNullOrEmpty(ip))
         {
           Console.WriteLine("\nFill in each value to see results");
@@ -86,9 +146,11 @@ namespace GlobalIPDotnet
         }
         else
         {
+          // An IP was supplied via command line; use it as-is.
           inputIp = ip;
         }
 
+        // Keep prompting until a non-empty IP is entered.
         while (string.IsNullOrEmpty(inputIp))
         {
           Console.WriteLine("\nFill in missing required parameters");
@@ -97,6 +159,8 @@ namespace GlobalIPDotnet
           inputIp = Console.ReadLine();
         }
 
+        // Map the input field to the API's expected query parameter name.
+        // (No format parameter is sent; the response is still parsed as JSON.)
         Dictionary<string, string> inputs = new Dictionary<string, string>()
         {
             { "ip", inputIp}
@@ -140,6 +204,8 @@ namespace GlobalIPDotnet
           }
         } while ((success != true) && (retryCounter < 5));
 
+        // If the IP came from the command line, treat this as a one-shot
+        // run rather than looping for additional records.
         bool isValid = false;
         if (!string.IsNullOrEmpty(ip))
         {
@@ -147,6 +213,8 @@ namespace GlobalIPDotnet
           shouldContinueRunning = false;
         }
 
+        // Otherwise ask whether to test another record. Keep prompting until we get a
+        // valid Y/N. "N" ends the program; "Y" falls through to another pass.
         while (!isValid)
         {
           Console.WriteLine("\nTest another record? (Y/N)");
